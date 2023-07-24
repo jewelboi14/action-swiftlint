@@ -24,11 +24,8 @@ fi
 
 if ! ${DIFF_BASE+false};
 then
-    # Get the absolute path of the current directory
-    currentDirectory=$(pwd)
-
-    # Use the absolute path in the git diff command
-    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- "$currentDirectory"/*.swift)
+    # Find all Swift files in the repository
+    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- `git ls-files '*.swift'`)
 
     if [ -z "$changedFiles" ]
     then
