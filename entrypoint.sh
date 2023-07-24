@@ -15,6 +15,8 @@ function convertToGitHubActionsLoggingCommands() {
     sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::\4 file=\1,line=\2,col=\3::\5/'
 }
 
+sh -c "git config --global --add safe.directory $PWD"
+
 if ! ${WORKING_DIRECTORY+false};
 then
 	cd ${WORKING_DIRECTORY}
