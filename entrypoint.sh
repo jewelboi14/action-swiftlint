@@ -24,12 +24,12 @@ fi
 
 if ! ${DIFF_BASE+false};
 then
-    # Find all Swift files in the repository
-    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- `git ls-files '*.swift'`)
+    # Find all changed files in the repository
+    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE))
 
     if [ -z "$changedFiles" ]
     then
-        echo "No Swift file changed"
+        echo "No files changed"
         exit
     fi
 fi
