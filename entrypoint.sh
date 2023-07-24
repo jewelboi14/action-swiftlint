@@ -1,31 +1,30 @@
 #!/bin/bash
 
 function stripPWD() {
-    if [ -n "${WORKING_DIRECTORY}" ];
+    if ! ${WORKING_DIRECTORY+false};
     then
-        cd "${WORKING_DIRECTORY}" || exit 1
+        cd - > /dev/null
     fi
     sed -E "s/$(pwd|sed 's/\//\\\//g')\///"
 }
-
 function convertToGitHubActionsLoggingCommands() {
     sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::\4 file=\1,line=\2,col=\3::\5/'
 }
-
-# Set safe.directory for git
-git config --global --add safe.directory "$PWD"
-
-# Fetch the base_ref from the remote and update the local branch
-git fetch --prune --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/heads/${BASE_REF}"
-git checkout "${BASE_REF}"
-
-# Compare the base_ref with the current branch (HEAD) to get changed files
-changedFiles=$(git --no-pager diff --name-only --relative "${BASE_REF}" HEAD)
-
-if [ -z "$changedFiles" ]; then
-    echo "No files changed"
-    exit
+sh -c "git config --global --add safe.directory $PWD"
+if ! ${WORKING_DIRECTORY+false};
+then
+	cd ${WORKING_DIRECTORY}
 fi
 
-# Run SwiftLint on changed files
+if ! ${DIFF_BASE+false};
+then
+    # Find all Swift files in the repository
+    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- `git ls-files '*.swift'`)
+
+    if [ -z "$changedFiles" ]
+    then
+        echo "No Swift file changed"
+        exit
+    fi
+fi
 set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsLoggingCommands
