@@ -1,3 +1,5 @@
+#!/bin/bash 
+
 function stripPWD() {
     if ! ${WORKING_DIRECTORY+false};
     then
