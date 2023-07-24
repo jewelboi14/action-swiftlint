@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 function stripPWD() {
     if ! ${WORKING_DIRECTORY+false};
@@ -8,14 +8,14 @@ function stripPWD() {
     sed -E "s/$(pwd|sed 's/\//\\\//g')\///"
 }
 
-function convertToGitHubActionsLoggingCommands() {
-    sed -E "s/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/\1:\2:\3: \4: \5/" | grep -F "$PWD/"
+function convertToGitHubActionsAnnotations() {
+    sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::\4 file=\1,line=\2,col=\3::\5/'
 }
 
 sh -c "git config --global --add safe.directory $PWD"
 if ! ${WORKING_DIRECTORY+false};
 then
-	cd ${WORKING_DIRECTORY}
+    cd ${WORKING_DIRECTORY}
 fi
 
 if ! ${DIFF_BASE+false};
@@ -32,4 +32,5 @@ then
     fi
 fi
 
-set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsLoggingCommands
+# Lint the changed Swift files
+set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsAnnotations
