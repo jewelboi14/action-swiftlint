@@ -21,7 +21,7 @@ fi
 if ! ${DIFF_BASE+false};
 then
     # Find all Swift files in the repository
-    git fetch --prune --no-tags origin "+refs/heads/${{ github.base_ref }}:refs/heads/${{ github.base_ref }}"
+    git fetch --prune --no-tags origin "+refs/heads/${GITHUB_BASE_REF}:refs/heads/${GITHUB_BASE_REF}"
     changedFiles=$(git diff --name-only $(git merge-base ${GITHUB_BASE_REF} ${GITHUB_HEAD_REF})..${GITHUB_HEAD_REF})
     echo "changed files $changedFiles"
 
