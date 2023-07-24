@@ -24,13 +24,17 @@ fi
 
 if ! ${DIFF_BASE+false};
 then
-	changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- '*.swift')
+    # Get the absolute path of the current directory
+    currentDirectory=$(pwd)
 
-	if [ -z "$changedFiles" ]
-	then
-		echo "No Swift file changed"
-		exit
-	fi
+    # Use the absolute path in the git diff command
+    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE) -- "$currentDirectory"/*.swift)
+
+    if [ -z "$changedFiles" ]
+    then
+        echo "No Swift file changed"
+        exit
+    fi
 fi
 
 set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsLoggingCommands
