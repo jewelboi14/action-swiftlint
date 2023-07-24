@@ -22,16 +22,16 @@ then
 	cd ${WORKING_DIRECTORY}
 fi
 
-if ! ${DIFF_BASE+false};
-then
-    # Find all changed files in the repository
-    changedFiles=$(git --no-pager diff --name-only --relative FETCH_HEAD $(git merge-base FETCH_HEAD $DIFF_BASE))
+# Fetch the base_ref from the remote and update the local branch
+git fetch --prune --no-tags --depth=1 origin +refs/heads/${{ github.base_ref }}:refs/heads/${{ github.base_ref }}
+git checkout ${{ github.base_ref }}
 
-    if [ -z "$changedFiles" ]
-    then
-        echo "No files changed"
-        exit
-    fi
+# Compare the base_ref with the current branch (HEAD) to get changed files
+changedFiles=$(git --no-pager diff --name-only --relative ${{ github.base_ref }} HEAD)
+
+if [ -z "$changedFiles" ]; then
+    echo "No files changed"
+    exit
 fi
 
 set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsLoggingCommands
