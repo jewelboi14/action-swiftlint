@@ -1,5 +1,3 @@
-#!/bin/bash
-
 function stripPWD() {
     if ! ${WORKING_DIRECTORY+false};
     then
@@ -7,9 +5,11 @@ function stripPWD() {
     fi
     sed -E "s/$(pwd|sed 's/\//\\\//g')\///"
 }
+
 function convertToGitHubActionsLoggingCommands() {
-    sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::\4 file=\1,line=\2,col=\3::\5/'
+    sed -E "s/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/\1:\2:\3: \4: \5/" | grep -F "$PWD/"
 }
+
 sh -c "git config --global --add safe.directory $PWD"
 if ! ${WORKING_DIRECTORY+false};
 then
@@ -29,4 +29,5 @@ then
         exit
     fi
 fi
+
 set -o pipefail && swiftlint "$@" -- $changedFiles | stripPWD | convertToGitHubActionsLoggingCommands
